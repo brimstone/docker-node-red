@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eu
+
+if [ -n "$SECURITY_KEY" ]; then
+	key="$(echo "$SECURITY_KEY" | sed 's/\(..\)/0x\1, /g')"
+	key="$(echo "$key" | sed 's/, $//')"
+	key="<Option name=\"NetworkKey\" value=\"$key\" \/>"
+	sed -i "/NetworkKey/s/^.*\$/$key/" /usr/local/etc/openzwave/options.xml
+fi
+
+usermod -aG dialout node-red
+[ -f /data/settings.js ] || cp /data.orig/settings.js /data/
+exec su -l -c "/usr/local/bin/npm start -- --userDir /data" node-red
